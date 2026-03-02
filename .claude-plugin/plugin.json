@@ -1,0 +1,22 @@
+{
+  "name": "pingward",
+  "displayName": "Pingward — API Monitoring",
+  "description": "Monitor APIs, websites, SSL certificates, DNS records, and cron jobs. Get alerts via Email, Slack, SMS, or Webhook.",
+  "version": "1.0.0",
+  "mcpServers": {
+    "pingward": {
+      "type": "url",
+      "url": "https://mcp.pingward.com/mcp",
+      "headers": {
+        "X-Api-Key": "${PINGWARD_API_KEY}"
+      }
+    }
+  },
+  "configuration": {
+    "PINGWARD_API_KEY": {
+      "description": "Your Pingward API key (format: aw_XXXXXXXX_XXXXXXXX). Create one at https://pingward.com/settings?tab=api-keys or via the REST API.",
+      "required": true,
+      "secret": true
+    }
+  }
+}

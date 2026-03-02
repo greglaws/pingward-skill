@@ -1,0 +1,12 @@
+{
+  "displayName": "Pingward — API Monitoring",
+  "shortDescription": "Monitor APIs, SSL certs, DNS, and cron jobs with intelligent alerting",
+  "category": "devops",
+  "tags": ["monitoring", "uptime", "api", "alerting", "observability", "ssl", "dns", "heartbeat"],
+  "author": "Pingward",
+  "authorUrl": "https://pingward.com",
+  "repositoryUrl": "https://github.com/greglaws/pingward-skill",
+  "documentationUrl": "https://docs.pingward.com",
+  "pricing": "freemium",
+  "icon": "https://pingward.com/favicon.svg"
+}
