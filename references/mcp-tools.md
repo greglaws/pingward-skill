@@ -3,7 +3,7 @@
 MCP endpoint: `https://mcp.pingward.com/mcp`
 Authentication: `X-Api-Key` header with your Pingward API key.
 
-Total: 56 tools, 4 prompts.
+Total: 59 tools, 4 prompts.
 
 ---
 
@@ -162,10 +162,10 @@ List all alert integrations.
 
 ### create_integration
 Create an integration. Config depends on type:
-- Email: `{"smtpHost", "smtpPort", "fromAddress", "toAddresses"}`
-- Slack: `{"webhookUrl", "channel"}`
-- SMS: `{"toNumbers"}`
-- Webhook: `{"url", "secretKey"}`
+- Email: `{"defaultRecipients": ["email@example.com"]}` (platform-managed) or `{"smtpHost", "smtpPort", "fromEmail", "toAddresses"}` (custom SMTP)
+- Slack: `{"webhookUrl", "channel"}` (webhook) or connect via OAuth in the web UI
+- SMS: `{"toNumbers": ["+15551234567"]}`
+- Webhook: `{"url", "secretKey", "httpMethod"}`
 
 Parameters:
 - `name` (string, required)
