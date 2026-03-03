@@ -1,9 +1,35 @@
 # Pingward MCP Tools Reference
 
 MCP endpoint: `https://mcp.pingward.com/mcp`
-Authentication: `X-Api-Key` header with your Pingward API key.
+Authentication: `X-Api-Key` header with your Pingward API key. Onboarding tools work without authentication.
 
-Total: 56 tools, 4 prompts.
+Total: 62 tools, 4 prompts.
+
+---
+
+## Onboarding (3 tools, no auth required)
+
+### register
+Create a Pingward account and get an API key in one step. No authentication required.
+- `email` (string, required): Email address
+- `password` (string, required): Password (8+ chars, uppercase, lowercase, digit, special character)
+- `firstName` (string, required): First name
+- `lastName` (string, required): Last name
+- `organizationName` (string, optional): Organization name (defaults to "FirstName's Organization")
+
+Returns: API key (`aw_...`), user info, tenant info, and setup instructions.
+
+### login
+Log in to an existing Pingward account and generate a new API key. No authentication required.
+- `email` (string, required): Email address
+- `password` (string, required): Password
+
+Returns: Same shape as `register` — API key, user info, tenant info.
+
+### get_plans
+View available plans and pricing. No authentication required.
+
+Returns: Plan details (Free, Starter, Pro, Enterprise) with pricing, limits, and feature highlights.
 
 ---
 
@@ -162,10 +188,10 @@ List all alert integrations.
 
 ### create_integration
 Create an integration. Config depends on type:
-- Email: `{"smtpHost", "smtpPort", "fromAddress", "toAddresses"}`
-- Slack: `{"webhookUrl", "channel"}`
-- SMS: `{"toNumbers"}`
-- Webhook: `{"url", "secretKey"}`
+- Email: `{"defaultRecipients": ["email@example.com"]}` (platform-managed) or `{"smtpHost", "smtpPort", "fromEmail", "toAddresses"}` (custom SMTP)
+- Slack: `{"webhookUrl", "channel"}` (webhook) or connect via OAuth in the web UI
+- SMS: `{"toNumbers": ["+15551234567"]}`
+- Webhook: `{"url", "secretKey", "httpMethod"}`
 
 Parameters:
 - `name` (string, required)
