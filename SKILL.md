@@ -18,40 +18,38 @@ Pingward is an API monitoring platform that checks HTTP endpoints, MCP servers, 
 
 ## Quick Start
 
-If the user already has a Pingward API key set in `PINGWARD_API_KEY`, skip to "Using MCP Tools" below.
+### Step 1: Connect MCP (no API key needed)
 
-### Step 1: Register an Account
+Add to your project's `.mcp.json`:
 
-```bash
-curl -X POST https://api.pingward.com/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "USER_EMAIL",
-    "password": "USER_PASSWORD",
-    "firstName": "FIRST_NAME",
-    "lastName": "LAST_NAME",
-    "organizationName": "ORG_NAME"
-  }'
+```json
+{
+  "mcpServers": {
+    "pingward": {
+      "type": "url",
+      "url": "https://mcp.pingward.com/mcp"
+    }
+  }
+}
 ```
 
-Save the `token` from the response.
+Restart your IDE session to connect.
 
-### Step 2: Create an API Key
+### Step 2: Register (or Login)
+
+Use the `register` tool with your email, password, name, and organization:
+
+> "Register me on Pingward with email user@example.com"
+
+Or if you already have an account, use the `login` tool.
+
+Both return an API key. Set it as the `PINGWARD_API_KEY` environment variable:
 
 ```bash
-curl -X POST https://api.pingward.com/api/auth/api-keys \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer JWT_TOKEN" \
-  -d '{"name": "agent-access", "scopes": ["read", "write", "delete", "execute", "integrations"]}'
+export PINGWARD_API_KEY="aw_your_key_here"
 ```
 
-Save the `key` from the response — it is shown only once. The key format is `aw_XXXXXXXX_XXXXXXXX`.
-
-### Step 3: Connect via MCP
-
-The MCP server is at `https://mcp.pingward.com/mcp`. Authenticate with the `X-Api-Key` header.
-
-For Claude Code, add to your project's `.mcp.json`:
+Then update `.mcp.json` to include the key and restart:
 
 ```json
 {
@@ -67,15 +65,17 @@ For Claude Code, add to your project's `.mcp.json`:
 }
 ```
 
-Set the environment variable:
+### Step 3: Use It
 
-```bash
-export PINGWARD_API_KEY="aw_your_key_here"
-```
+All 62 tools are now available. Ask:
 
-## REST API (No MCP Required)
+> "Set up monitoring for my API at https://api.example.com"
 
-If MCP tools are not yet connected (or can't be — e.g., headless setup), use the REST API directly with curl. The API key works with both `X-Api-Key` header and `Authorization: Bearer` header.
+The agent will create HTTP monitors, SSL certificate checks, DNS monitors, alerting integrations, and routing rules.
+
+## REST API (Fallback)
+
+If MCP tools are not available (e.g., CI/CD, headless environments), use the REST API directly. The API key works with both `X-Api-Key` header and `Authorization: Bearer` header.
 
 ```bash
 # List monitors
@@ -98,12 +98,12 @@ curl https://api.pingward.com/api/dashboard/summary -H "X-Api-Key: $PINGWARD_API
 See `references/api-reference.md` for the full endpoint reference (~80 endpoints with curl examples).
 
 **When to use REST vs MCP:**
-- **Use REST (curl)** for initial setup, CI/CD scripts, headless environments, or when MCP isn't connected yet
-- **Use MCP tools** for interactive agent workflows once connected (richer context, prompts, streaming)
+- **Use REST (curl)** for CI/CD scripts, headless environments, or programmatic access
+- **Use MCP tools** for interactive agent workflows (richer context, prompts, streaming)
 
 ## Using MCP Tools
 
-Once connected, you have access to 59 tools and 4 prompts. Here are the most common workflows:
+Once connected with an API key, you have access to 62 tools and 4 prompts. Here are the most common workflows:
 
 ### Monitor an API
 
@@ -112,8 +112,6 @@ Once connected, you have access to 59 tools and 4 prompts. Here are the most com
 3. Use `create_dns_test` to verify DNS resolution
 4. Use `run_test` to execute a test immediately and verify it works
 
-*curl fallback:* `POST /api/tests` with `testType` set to `Http`, `SslCertificate`, or `DnsRecord`. See `references/api-reference.md` > Tests.
-
 ### Set Up Alerting
 
 1. Use `create_integration` to add a notification channel (Email, Slack, SMS, Webhook)
@@ -121,15 +119,11 @@ Once connected, you have access to 59 tools and 4 prompts. Here are the most com
 3. Use `create_routing_rule` to route alerts by severity or error type
 4. Use `create_escalation_policy` for multi-tier escalation
 
-*curl fallback:* `POST /api/integrations`, `POST /api/routing-rules`, `POST /api/escalation-policies`. See `references/api-reference.md` > Integrations, Routing Rules, Escalation Policies.
-
 ### Monitor Cron Jobs & Background Tasks
 
 1. Use `create_heartbeat_monitor` to get a ping URL
 2. Add the ping URL to your cron job / task scheduler
 3. If pings stop arriving, an alert fires
-
-*curl fallback:* `POST /api/heartbeat-monitors`. See `references/api-reference.md` > Heartbeat Monitors.
 
 ### Investigate Issues
 
@@ -153,6 +147,7 @@ Once connected, you have access to 59 tools and 4 prompts. Here are the most com
 
 | Category | Tools | Key Tools |
 |----------|-------|-----------|
+| Onboarding | 3 | `register`, `login`, `get_plans` |
 | Tests | 13 | `create_http_test`, `create_ssl_test`, `create_dns_test`, `run_test`, `list_tests` |
 | Heartbeats | 8 | `create_heartbeat_monitor`, `list_heartbeat_monitors`, `pause_heartbeat_monitor` |
 | Issues | 6 | `list_issues`, `get_issue`, `acknowledge_issue`, `resolve_issue` |
@@ -188,7 +183,7 @@ Once connected, you have access to 59 tools and 4 prompts. Here are the most com
 | Status pages | No | Yes | Yes | Unlimited |
 | SSO | No | No | No | Yes |
 
-View plans: `GET https://api.pingward.com/api/billing/plans`
+Use the `get_plans` tool or `GET https://api.pingward.com/api/billing/plans` for details.
 
 ## Feedback
 
