@@ -244,7 +244,7 @@ curl -X POST https://api.pingward.com/api/routing-rules \
 curl https://api.pingward.com/api/dashboard/summary -H "X-Api-Key: $PINGWARD_API_KEY"
 ```
 
-See `references/api-reference.md` for the full endpoint reference (~80 endpoints).
+See `references/api-reference.md` for the full endpoint reference (~110 endpoints).
 
 ---
 

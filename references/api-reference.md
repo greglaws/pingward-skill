@@ -1764,6 +1764,43 @@ POST /api/billing/checkout
 }
 ```
 
+### Get Billing History
+
+```
+GET /api/billing/history
+```
+
+Returns billing records for the last N months.
+
+**Query parameters:**
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `limit` | int | 12 |
+
+**Response (200):** `BillingRecordResponse[]`
+
+### Create Billing Portal Session
+
+```
+POST /api/billing/portal
+```
+
+Creates a Stripe billing portal session for managing subscription, payment methods, and invoices.
+
+**Body:**
+```json
+{
+  "returnUrl": "https://pingward.com/settings?tab=billing"
+}
+```
+
+**Response (200):**
+```json
+{
+  "url": "https://billing.stripe.com/..."
+}
+```
+
 ---
 
 ## Feedback
@@ -1791,6 +1828,465 @@ POST /api/feedback
   "createdAt": "datetime"
 }
 ```
+
+---
+
+## Password Management
+
+### Forgot Password
+
+```
+POST /api/auth/forgot-password
+```
+
+No authentication required.
+
+**Body:**
+```json
+{
+  "email": "string (required)"
+}
+```
+
+**Response:** 200 OK (always returns success to prevent email enumeration)
+
+### Reset Password
+
+```
+POST /api/auth/reset-password
+```
+
+No authentication required.
+
+**Body:**
+```json
+{
+  "email": "string (required)",
+  "token": "string (required)",
+  "newPassword": "string (required, 8+ chars)"
+}
+```
+
+**Response (200):** `{ "succeeded": true }`
+
+### Change Password
+
+```
+POST /api/auth/change-password
+```
+
+Requires authentication.
+
+**Body:**
+```json
+{
+  "currentPassword": "string (required)",
+  "newPassword": "string (required, 8+ chars)"
+}
+```
+
+**Response (200):** `{ "succeeded": true }`
+
+---
+
+## Account Management
+
+### Export Account Data
+
+```
+POST /api/account/export
+```
+
+Exports all user and workspace data (GDPR data export).
+
+**curl:**
+```bash
+curl -X POST https://api.pingward.com/api/account/export \
+  -H "X-Api-Key: YOUR_API_KEY"
+```
+
+**Response (200):** JSON object containing user profile, workspace info, tests, issues, integrations, routing rules, on-call schedules, heartbeat monitors, maintenance windows, billing records, contact methods, and team memberships.
+
+### Delete Account
+
+```
+DELETE /api/account
+```
+
+Deletes the user account. If the user is the sole owner, the entire workspace is deleted. If there are other members, ownership must be transferred first.
+
+**Response:** 204 No Content
+
+---
+
+## Team Management
+
+### List Team Members
+
+```
+GET /api/team/members
+```
+
+**curl:**
+```bash
+curl https://api.pingward.com/api/team/members \
+  -H "X-Api-Key: YOUR_API_KEY"
+```
+
+**Response (200):**
+```json
+[
+  {
+    "id": "guid",
+    "userId": "string",
+    "email": "string",
+    "firstName": "string",
+    "lastName": "string",
+    "role": "Owner|Admin|Member|Viewer",
+    "joinedAt": "datetime",
+    "lastActiveAt": "datetime|null"
+  }
+]
+```
+
+### Update Member Role
+
+```
+PUT /api/team/members/{id}/role
+```
+
+Requires Admin or Owner role.
+
+**Body:**
+```json
+{
+  "role": "Owner|Admin|Member|Viewer"
+}
+```
+
+**Response:** 204 No Content
+
+### Remove Team Member
+
+```
+DELETE /api/team/members/{id}
+```
+
+Requires Admin or Owner role. Cannot remove the owner.
+
+**Response:** 204 No Content
+
+### List Pending Invites
+
+```
+GET /api/team/invites
+```
+
+**Response (200):**
+```json
+[
+  {
+    "id": "guid",
+    "email": "string",
+    "role": "string",
+    "invitedBy": "string",
+    "expiresAt": "datetime",
+    "createdAt": "datetime"
+  }
+]
+```
+
+### Create Invite
+
+```
+POST /api/team/invites
+```
+
+Requires Admin or Owner role. Sends an email invitation.
+
+**Body:**
+```json
+{
+  "email": "string (required)",
+  "role": "Owner|Admin|Member|Viewer (default: Viewer)"
+}
+```
+
+**Response (200):** `InviteResponse`
+
+### Cancel Invite
+
+```
+DELETE /api/team/invites/{id}
+```
+
+**Response:** 204 No Content
+
+### Accept Invite
+
+```
+POST /api/team/invites/{token}/accept
+```
+
+No authentication required. Creates a new user if one doesn't exist.
+
+**Body:**
+```json
+{
+  "firstName": "string (optional)",
+  "lastName": "string (optional)",
+  "password": "string (required for new users)"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "tenantName": "string",
+  "message": "You have successfully joined the organization"
+}
+```
+
+### Resend Invite Email
+
+```
+POST /api/team/invites/{id}/resend
+```
+
+**Response (200):** `{ "message": "Invite email sent" }`
+
+---
+
+## Status Pages
+
+Available on Starter plan and above.
+
+### List Status Pages
+
+```
+GET /api/status-pages
+```
+
+**Response (200):** `StatusPageResponse[]`
+
+### Get Status Page
+
+```
+GET /api/status-pages/{id}
+```
+
+**Response (200):**
+```json
+{
+  "id": "guid",
+  "slug": "string",
+  "companyName": "string",
+  "logoUrl": "string|null",
+  "brandColor": "string|null",
+  "customCss": "string|null",
+  "allowCustomCss": false,
+  "showUptimePercentage": true,
+  "showIncidentHistory": true,
+  "incidentHistoryDays": 90,
+  "showResponseTime": true,
+  "allowEmailSubscriptions": false,
+  "allowWebhookSubscriptions": false,
+  "isPublished": false,
+  "components": [],
+  "subscriberCount": 0,
+  "createdAt": "datetime",
+  "updatedAt": "datetime"
+}
+```
+
+### Create Status Page
+
+```
+POST /api/status-pages
+```
+
+**Body:**
+```json
+{
+  "slug": "string (required, lowercase letters/numbers/hyphens, 3-50 chars)",
+  "companyName": "string (required)",
+  "logoUrl": "string (optional)",
+  "brandColor": "string (optional, hex color e.g. #FF5733)",
+  "showUptimePercentage": true,
+  "showIncidentHistory": true,
+  "incidentHistoryDays": 90,
+  "showResponseTime": true,
+  "allowEmailSubscriptions": false,
+  "allowWebhookSubscriptions": false
+}
+```
+
+**curl:**
+```bash
+curl -X POST https://api.pingward.com/api/status-pages \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: YOUR_API_KEY" \
+  -d '{
+    "slug": "acme-status",
+    "companyName": "Acme Corp",
+    "brandColor": "#4F46E5",
+    "showUptimePercentage": true,
+    "showIncidentHistory": true
+  }'
+```
+
+**Response (201):** `StatusPageResponse`
+
+### Update Status Page
+
+```
+PUT /api/status-pages/{id}
+```
+
+**Body:** Same fields as Create, all optional. Enterprise plans can also set `customCss`.
+
+**Response (200):** `StatusPageResponse`
+
+### Delete Status Page
+
+```
+DELETE /api/status-pages/{id}
+```
+
+**Response:** 204 No Content
+
+### Publish Status Page
+
+```
+POST /api/status-pages/{id}/publish
+```
+
+Makes the status page publicly accessible at `/status/{slug}`. Requires at least one component.
+
+**Response (200):** `StatusPageResponse`
+
+### Unpublish Status Page
+
+```
+POST /api/status-pages/{id}/unpublish
+```
+
+**Response (200):** `StatusPageResponse`
+
+### Add Component
+
+```
+POST /api/status-pages/{id}/components
+```
+
+**Body:**
+```json
+{
+  "testId": "guid (required)",
+  "displayName": "string (required)",
+  "description": "string (optional)",
+  "displayOrder": 0
+}
+```
+
+**Response (201):** `StatusPageComponentResponse`
+
+### Update Component
+
+```
+PUT /api/status-pages/{id}/components/{componentId}
+```
+
+**Body:** `displayName`, `description`, `displayOrder` -- all optional.
+
+**Response (200):** `StatusPageComponentResponse`
+
+### Delete Component
+
+```
+DELETE /api/status-pages/{id}/components/{componentId}
+```
+
+**Response:** 204 No Content
+
+### Reorder Components
+
+```
+PUT /api/status-pages/{id}/components/reorder
+```
+
+**Body:**
+```json
+{
+  "components": [
+    { "componentId": "guid", "displayOrder": 0 },
+    { "componentId": "guid", "displayOrder": 1 }
+  ]
+}
+```
+
+**Response (200):** `StatusPageResponse`
+
+---
+
+## Bulk Operations
+
+### Bulk Create Tests
+
+```
+POST /api/bulk/tests
+```
+
+Create multiple tests in a single request.
+
+**Body:** Array of test objects (same shape as single test creation).
+
+**curl:**
+```bash
+curl -X POST https://api.pingward.com/api/bulk/tests \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: YOUR_API_KEY" \
+  -d '[
+    {"name": "API Health", "testType": "Http", "httpMethod": "GET", "url": "https://api.example.com/health", "frequencyMinutes": 5, "regions": ["*"]},
+    {"name": "Web Frontend", "testType": "Http", "httpMethod": "GET", "url": "https://example.com", "frequencyMinutes": 5, "regions": ["*"]}
+  ]'
+```
+
+**Response (201):** `TestResponse[]`
+
+### Bulk Delete Tests
+
+```
+DELETE /api/bulk/tests
+```
+
+**Body:**
+```json
+["test-id-1", "test-id-2"]
+```
+
+**Response:** 204 No Content
+
+### Bulk Create Heartbeat Monitors
+
+```
+POST /api/bulk/heartbeat-monitors
+```
+
+**Body:** Array of heartbeat monitor objects.
+
+**Response (201):** `HeartbeatMonitorResponse[]`
+
+### Bulk Delete Heartbeat Monitors
+
+```
+DELETE /api/bulk/heartbeat-monitors
+```
+
+**Body:** Array of monitor IDs.
+
+**Response:** 204 No Content
 
 ---
 

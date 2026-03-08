@@ -95,7 +95,7 @@ curl -X POST https://api.pingward.com/api/integrations \
 curl https://api.pingward.com/api/dashboard/summary -H "X-Api-Key: $PINGWARD_API_KEY"
 ```
 
-See `references/api-reference.md` for the full endpoint reference (~80 endpoints with curl examples).
+See `references/api-reference.md` for the full endpoint reference (~110 endpoints with curl examples).
 
 **When to use REST vs MCP:**
 - **Use REST (curl)** for CI/CD scripts, headless environments, or programmatic access
